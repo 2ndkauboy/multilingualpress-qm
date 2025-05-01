@@ -23,6 +23,13 @@ class QM_Collector_MLP_Translations extends QM_DataCollector {
 
 	public $id = 'mlp_translations';
 
+	private $current_locale;
+
+	public function __construct() {
+		parent::__construct();
+		$this->current_locale = get_locale();
+	}
+
 	public function get_storage(): QM_Data {
 		return new QM_Data_MLP_Translations();
 	}
@@ -38,12 +45,11 @@ class QM_Collector_MLP_Translations extends QM_DataCollector {
 		)->forSiteId( get_current_blog_id() )->includeBase();
 
 		/** @var Translation[] $translations */
-		$translations   = resolve( Translations::class )->searchTranslations( $args );
-		$current_locale = get_locale();
+		$translations = resolve( Translations::class )->searchTranslations( $args );
 
 		$this->data->translations = [];
 		foreach ( $translations as $translation ) {
-			if ( $translation->language()->locale() !== $current_locale && $translation->remoteContentId() !== 0 ) {
+			if ( $translation->language()->locale() !== $this->current_locale && $translation->remoteContentId() !== 0 ) {
 				$this->data->translations[] = $translation;
 			}
 		}
@@ -52,7 +58,7 @@ class QM_Collector_MLP_Translations extends QM_DataCollector {
 
 /**
  * @param array<string, QM_Collector> $collectors
- * @param QueryMonitor                $qm
+ * @param QueryMonitor $qm
  *
  * @return array<string, QM_Collector>
  */
